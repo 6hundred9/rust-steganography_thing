@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# oh boy how long could the dependencies possibly be?
+png = "0.17.14"
+tempfile = "3.13.0"
+rayon = "1.10.0"
