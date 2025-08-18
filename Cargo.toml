@@ -1,5 +1,5 @@
 [package]
-name = "rust-stenography_thing"
+name = "rust-steganography_thing" # my dyselxic ass wrote stenography instead of steganography :sob:
 version = "0.1.0"
 edition = "2024"
 
@@ -9,3 +9,10 @@ png = "0.17.14"
 tempfile = "3.13.0"
 rayon = "1.10.0"
 hound = "3.5.1"
+clap = { version = "4.5.45", features = ["derive"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = 'abort'

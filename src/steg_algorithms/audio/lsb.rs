@@ -1,7 +1,7 @@
 use hound::{WavReader, WavWriter, WavSpec, SampleFormat};
 use std::path::Path;
 
-fn hide_wav(path_in: &Path, path_out: &Path, msg: &[u8]) -> Result<(), String> {
+pub fn hide_wav(path_in: &Path, path_out: &Path, msg: &[u8]) -> Result<(), String> {
     let mut r = WavReader::open(path_in).map_err(|e| e.to_string())?;
     let spec = r.spec();
     if spec.sample_format != SampleFormat::Int || spec.bits_per_sample != 16 {
@@ -32,7 +32,7 @@ fn hide_wav(path_in: &Path, path_out: &Path, msg: &[u8]) -> Result<(), String> {
     w.finalize().map_err(|e| e.to_string())
 }
 
-fn find_wav(path: &Path) -> Result<Vec<u8>, String> {
+pub fn find_wav(path: &Path) -> Result<Vec<u8>, String> {
     let mut r = WavReader::open(path).map_err(|e| e.to_string())?;
     let spec = r.spec();
     if spec.sample_format != SampleFormat::Int || spec.bits_per_sample != 16 {
@@ -68,7 +68,7 @@ mod tests {
     // helper: make a silent 16-bit PCM wav with N samples
     fn make_test_wav(path: &PathBuf, samples: usize) {
         let spec = WavSpec {
-            channels: 1,
+            channels: 2,
             sample_rate: 44100,
             bits_per_sample: 16,
             sample_format: SampleFormat::Int,
@@ -87,7 +87,7 @@ mod tests {
         let out_path = dir.path().join("out.wav");
 
         // enough samples for our message
-        make_test_wav(&in_path, 10000);
+        make_test_wav(&in_path, 100000);
 
         let msg = b"hello wav stego!";
         hide_wav(&in_path, &out_path, msg).unwrap();
