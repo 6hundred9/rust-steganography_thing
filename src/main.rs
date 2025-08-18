@@ -57,17 +57,76 @@ fn main() {
     // spaghetti
     // better than 500 if statements tho :pensive:
 
+    let method = args.method.as_str();
+    let filetype = args.filetype.as_str();
+    let algorithm = args.algorithm.as_str();
+    
     let msg = args.message;
 
     let ext = Path::new(&args.in_path).extension().and_then(|e| e.to_str()).ok_or("Invalid file extension".to_string()).unwrap().to_string();
     // There HAS to be a better way to do this :sob:
     // God if you can hear me PLEASE let an actually decent rust dev PR on this :sob:
-    match args.method { 
-        find_str => {
-            match args.filetype {
-                audio_str => {
-                    match args.algorithm {
-                        lsb_str => {
+    println!("filetype: {}, alg: {}, method: {}, message: {}", filetype, algorithm, method, msg);
+    match method { 
+        "find" => {
+            match filetype {
+                "audio" => {
+                    match algorithm {
+                        "lsb" => {
+                            // WHY DOES -M HIDE END UP HERE I'M GONNA KILL MYSELF
+                            let mut bits: Vec<u8> = steg_algorithms::audio::lsb::find_wav(Path::new(&args.in_path)).expect("FUCK YOU AGAIN");
+
+                            // read 32-bit big-endian length
+                            let mut len: u32 = 0;
+                            for i in 0..32 {
+                                len = (len << 1) | (bits[i] as u32);
+                            }
+                            
+                            let mut bytes: Vec<u8> = Vec::with_capacity(len as usize);
+                            let start = 32;
+                            for byte_idx in 0..(len as usize) {
+                                let base = start + byte_idx * 8;
+                                let mut b: u8 = 0;
+                                for j in 0..8 {
+                                    b = (b << 1) | (bits[base + j] & 1);
+                                }
+                                bytes.push(b);
+                            }
+
+                            println!("{}", String::from_utf8(bytes).map_err(|_| "<invalid utf8>".to_string()).expect("This is... dame da stupid..."));
+                        }
+                        
+                        _=>{}
+                    }
+                }
+
+                "picture" => {
+                    match algorithm {
+                        "lsb" => {
+                            
+                        }
+
+                        _=>{}
+                    }
+                }
+
+                "text" => {
+
+                }
+
+                "video" => {
+
+                }
+
+                _=> {}
+            }
+        }
+        
+        "hide" => {
+            match filetype {
+                "audio" => {
+                    match algorithm {
+                        "lsb" => {
                             let msg_len = msg.len() as u32;
                             let mut bits: Vec<u8> = Vec::with_capacity(32 + msg.len() * 8);
                             for i in (0..32).rev() { bits.push(((msg_len >> i) & 1) as u8); }
@@ -76,44 +135,20 @@ fn main() {
                             }
                             steg_algorithms::audio::lsb::hide_wav(Path::new(&args.in_path), Path::new(&args.out_path), &bits).expect("FUCK YOU")
                         }
+
+                        _=>{}
                     }
                 }
 
-                picture_str => {
-                    match args.algorithm {
-                        lsb_str => {
-                            
-                        }
-                    }
-                }
-
-                text_str => {
+                "picture" => {
 
                 }
 
-                video_str => {
+                "text" => {
 
                 }
 
-                _=> {}
-            }
-        }
-        
-        hide_str => {
-            match args.filetype {
-                audio_str => {
-
-                }
-
-                picture_str => {
-
-                }
-
-                text_str => {
-
-                }
-
-                video_str => {
+                "video" => {
 
                 }
 
