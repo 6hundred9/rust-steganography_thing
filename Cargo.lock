@@ -319,7 +319,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-steganography_thing"
+name = "rust-stego"
 version = "0.1.0"
 dependencies = [
  "clap",

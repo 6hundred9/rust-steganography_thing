@@ -1,5 +1,5 @@
 [package]
-name = "rust-steganography_thing" # my dyselxic ass wrote stenography instead of steganography :sob:
+name = "rust-stego"
 version = "0.1.0"
 edition = "2024"
 
