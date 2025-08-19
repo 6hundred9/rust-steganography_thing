@@ -1,4 +1,4 @@
-# rust-steganography_thing
+# rust-steno
 🦀A (currently bare-minimum) CLI tool to hide data inside files
 
 ## Current filetypes:
