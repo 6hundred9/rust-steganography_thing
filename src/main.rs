@@ -121,9 +121,12 @@ fn main() {
                 "png" | "bmp" | "jpg" | "jpeg" | "picture" => {
                     match alg {
                         "lsb" => {
-                            // TODO: implement picture LSB hide dispatch
-                            eprintln!("picture/lsb hide not implemented yet — future TODO");
-                            std::process::exit(1);
+                            if let Err(e) = steg_algorithms::picture::lsb::hide(in_path, message, out_path) {
+                                eprintln!("hide failed: {}", e);
+                                std::process::exit(1);
+                            } else if cli.verbose {
+                                println!("hide succeeded!");
+                            }
                         }
                         other => {
                             eprintln!("Unsupported algorithm '{}' for picture", other);
@@ -206,8 +209,15 @@ fn main() {
                 "png" | "bmp" | "jpg" | "jpeg" | "picture" => {
                     match alg {
                         "lsb" => {
-                            eprintln!("picture/lsb find not implemented yet — future TODO");
-                            std::process::exit(1);
+                            let a = steg_algorithms::picture::lsb::find(in_path);
+                            if let Err(e) = a {
+                                eprintln!("find failed: {}", e);
+                                std::process::exit(1);
+                            } else if cli.verbose {
+                                println!("find succeeded, result!");
+                            }
+                            
+                            println!("Result: {}", a.unwrap())
                         }
                         other => {
                             eprintln!("Unsupported algorithm '{}' for picture", other);

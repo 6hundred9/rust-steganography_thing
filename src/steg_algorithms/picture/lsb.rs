@@ -1,8 +1,8 @@
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use png::ColorType;
 
-pub fn hide(path: &Path, msg: &str) -> Result<(), String> {
+pub fn hide(path: &Path, msg: &str, outPath: &Path) -> Result<(), String> {
     if !path.exists() {
         return Err(format!("Path {} doesn't exist!", path.display()));
     }
@@ -57,7 +57,7 @@ pub fn hide(path: &Path, msg: &str) -> Result<(), String> {
     }
 
     // write back preserving color_type & bit_depth
-    let file_out = File::create(path).map_err(|e| e.to_string())?;
+    let file_out = File::create(outPath).map_err(|e| e.to_string())?;
     let mut encoder = png::Encoder::new(file_out, width, height);
     encoder.set_color(color_type);
     encoder.set_depth(bit_depth);
