@@ -167,7 +167,7 @@ mod tests {
         let message = "fart hill";
         assert!(message.len() <= capacity_bytes, "Test message must fit in image");
 
-        hide(&path, message).expect("Failed to hide message");
+        hide(&path, message, &path).expect("Failed to hide message");
 
         let decoded = find(&path).expect("Failed to decode message");
 
@@ -193,7 +193,7 @@ mod tests {
         // make a message one byte bigger than capacity
         let too_big = "A".repeat(capacity_bytes + 1);
 
-        let res = hide(&path, &too_big);
+        let res = hide(&path, &too_big, &dir.path().join(Path::new("out.png")));
         assert!(res.is_err(), "Should fail because message is too big");
     }
     
@@ -207,7 +207,7 @@ mod tests {
         create_test_png(&path, width, height);
 
         let message = "";
-        hide(&path, message).expect("Failed to hide empty message");
+        hide(&path, message, &path).expect("Failed to hide empty message");
 
         let decoded = find(&path).expect("Failed to decode empty message");
         // just ensure decoding didn't return the invalid-utf8 sentinel
@@ -217,7 +217,7 @@ mod tests {
     #[test]
     fn test_nonexistent_file() {
         let bogus = Path::new("this_file_definitely_doesnt_exist_12345.png");
-        let result = hide(bogus, "hi");
+        let result = hide(bogus, "hi", Path::new("bleh"));
         assert!(result.is_err());
 
         let result2 = find(bogus);
