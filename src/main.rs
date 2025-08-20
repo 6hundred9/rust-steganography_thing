@@ -104,7 +104,7 @@ fn main() {
                             }
 
                             // call your module
-                            if let Err(e) = steg_algorithms::audio::lsb::hide_wav(in_path, out_path, &bits) {
+                            if let Err(e) = steg_algorithms::audio::wav::lsb::hide_wav(in_path, out_path, &bits) {
                                 eprintln!("hide failed: {}", e);
                                 std::process::exit(1);
                             } else if cli.verbose {
@@ -118,10 +118,10 @@ fn main() {
                     }
                 }
 
-                "png" | "bmp" | "jpg" | "jpeg" | "picture" => {
+                "png" | "picture" => {
                     match alg {
                         "lsb" => {
-                            if let Err(e) = steg_algorithms::picture::lsb::hide(in_path, message, out_path) {
+                            if let Err(e) = steg_algorithms::picture::png::lsb::hide(in_path, message, out_path) {
                                 eprintln!("hide failed: {}", e);
                                 std::process::exit(1);
                             } else if cli.verbose {
@@ -161,7 +161,7 @@ fn main() {
                 "wav" | "wave" | "audio" => {
                     match alg {
                         "lsb" => {
-                            let bits = match steg_algorithms::audio::lsb::find_wav(in_path) {
+                            let bits = match steg_algorithms::audio::wav::lsb::find_wav(in_path) {
                                 Ok(v) => v,
                                 Err(e) => { eprintln!("find failed: {}", e); std::process::exit(1); }
                             };
@@ -206,10 +206,10 @@ fn main() {
                     }
                 }
 
-                "png" | "bmp" | "jpg" | "jpeg" | "picture" => {
+                "png" | "picture" => {
                     match alg {
                         "lsb" => {
-                            let a = steg_algorithms::picture::lsb::find(in_path);
+                            let a = steg_algorithms::picture::png::lsb::find(in_path);
                             if let Err(e) = a {
                                 eprintln!("find failed: {}", e);
                                 std::process::exit(1);

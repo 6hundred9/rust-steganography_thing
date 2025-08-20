@@ -1,1 +1,1 @@
-pub mod lsb;
+pub mod wav;
