@@ -1,4 +1,4 @@
-use hound::{WavReader, WavWriter, WavSpec, SampleFormat};
+use hound::{WavReader, WavWriter, SampleFormat};
 use std::path::Path;
 
 pub fn hide_wav(path_in: &Path, path_out: &Path, msg: &[u8]) -> Result<(), String> {
@@ -39,7 +39,7 @@ pub fn find_wav(path: &Path) -> Result<Vec<u8>, String> {
         return Err("Only PCM16 WAV supported".into());
     }
     let samples: Vec<i16> = r.samples::<i16>().map(|s| s.unwrap()).collect();
-    let mut bits: Vec<u8> = samples.iter().map(|&s| (s as u16 & 1) as u8).collect();
+    let bits: Vec<u8> = samples.iter().map(|&s| (s as u16 & 1) as u8).collect();
 
     if bits.len() < 32 { return Err("Too short for header".into()); }
     // read 32-bit len

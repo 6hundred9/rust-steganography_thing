@@ -64,14 +64,42 @@ fn main() {
 
     // helper closure to decide filetype (prefer explicit arg, fallback to file extension)
     let detect_filetype = |ft_opt: &Option<String>, in_path: &PathBuf| -> Result<String, String> {
+        // if user explicitly passed a filetype, accept a few synonyms and normalize
         if let Some(ft) = ft_opt {
-            return Ok(ft.to_lowercase());
+            let ft_l = ft.to_lowercase();
+            return match ft_l.as_str() {
+                "picture" | "image" | "img" => Ok("picture".to_string()),
+                "video" | "movie" => Ok("video".to_string()),
+                "audio" | "sound" => Ok("audio".to_string()),
+                "text" | "txt" | "string" => Ok("text".to_string()),
+                other => Err(format!("Unknown filetype '{}'. Use picture/video/audio/text.", other)),
+            };
         }
+
+        // otherwise try to guess from extension
         let ext = in_path
             .extension()
             .and_then(|e| e.to_str())
-            .ok_or_else(|| "Could not detect file extension; provide --filetype".to_string())?;
-        Ok(ext.to_lowercase())
+            .ok_or_else(|| "Could not detect file extension; provide --filetype".to_string())?
+            .to_lowercase();
+
+        match ext.as_str() {
+            // images
+            "png" | "jpg" | "jpeg" | "bmp" | "gif" | "webp" | "tiff" | "tif" |
+            "heic" | "heif" | "avif" | "ico" => Ok("picture".to_string()),
+
+            // video
+            "mp4" | "mkv" | "mov" | "avi" | "webm" | "flv" | "mpeg" | "mpg" |
+            "m4v" | "ogv" | "3gp" => Ok("video".to_string()),
+
+            // audio
+            "wav" | "mp3" | "flac" | "ogg" | "opus" | "aac" | "m4a" | "wma" | "alac" => Ok("audio".to_string()),
+
+            // text-ish
+            "txt" | "md" | "markdown" | "csv" | "json" | "xml" | "yml" | "yaml" | "html" | "htm" => Ok("text".to_string()),
+
+            other => Err(format!("Unrecognized extension '{}'. Provide --filetype (picture/video/audio/text).", other)),
+        }
     };
 
     match &cli.cmd {
@@ -82,7 +110,7 @@ fn main() {
             };
             let alg = algorithm.as_deref().unwrap_or_else(|| match ft.as_str() {
                 "wav" | "wave" | "audio" => "lsb",
-                "png" | "bmp" | "picture" => "lsb",
+                "picture" => "lsb",
                 _ => "lsb", // default fallback
             });
 
@@ -118,14 +146,30 @@ fn main() {
                     }
                 }
 
-                "png" | "picture" => {
+                "picture" => {
                     match alg {
                         "lsb" => {
-                            if let Err(e) = steg_algorithms::picture::png::lsb::hide(in_path, message, out_path) {
+                            if let Err(e) = steg_algorithms::picture::general::lsb::hide(in_path, message, out_path) {
                                 eprintln!("hide failed: {}", e);
                                 std::process::exit(1);
                             } else if cli.verbose {
                                 println!("hide succeeded!");
+                            }
+                        }
+                        
+                        "marker" => {
+                            let ext = in_path.extension()
+                                .and_then(|e| e.to_str())
+                                .ok_or("Invalid file extension")
+                                .unwrap();
+                            if ext == "jpg" || ext == "jpeg" {
+                                if let Err(e) = steg_algorithms::picture::jpg::marker_hijacking::hide(in_path, message, out_path) {
+                                    eprintln!("hide failed: {}", e);
+                                } else if cli.verbose {
+                                    println!("hide succeeded! :3")
+                                }
+                            } else { 
+                                println!("You can only use marker hijacking with jpeg files >:(")
                             }
                         }
                         other => {
@@ -206,10 +250,10 @@ fn main() {
                     }
                 }
 
-                "png" | "picture" => {
+                "picture" => {
                     match alg {
                         "lsb" => {
-                            let a = steg_algorithms::picture::png::lsb::find(in_path);
+                            let a = steg_algorithms::picture::general::lsb::find(in_path);
                             if let Err(e) = a {
                                 eprintln!("find failed: {}", e);
                                 std::process::exit(1);
@@ -219,6 +263,25 @@ fn main() {
                             
                             println!("Result: {}", a.unwrap())
                         }
+
+                        "marker" => {
+                            let ext = in_path.extension()
+                                .and_then(|e| e.to_str())
+                                .ok_or("Invalid file extension")
+                                .unwrap();
+                            if ext == "jpg" || ext == "jpeg" {
+                                let a = steg_algorithms::picture::jpg::marker_hijacking::find(in_path);
+                                if let Err(e) = &a {
+                                    eprintln!("hide failed: {}", e);
+                                } else if cli.verbose {
+                                    println!("hide succeeded! :3")
+                                }
+                                println!("Result: {}", a.unwrap())
+                            } else {
+                                println!("You can only use marker hijacking with jpeg files >:(")
+                            }
+                        }
+                        
                         other => {
                             eprintln!("Unsupported algorithm '{}' for picture", other);
                             std::process::exit(1);
